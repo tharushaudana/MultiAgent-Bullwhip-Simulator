@@ -11,18 +11,30 @@ That's the entire shock. Here's what four individually-rational LLM agents do wi
 
 ## The finding
 
-| Condition | What changes | Amplification ratio |
+This isn't one cherry-picked run — every condition was run multiple times, and every run is
+committed to [`backend/runs/`](backend/runs) so the numbers below are checkable, not asserted:
+
+| Condition | What changes | Amplification ratio across repeated runs |
 |---|---|---|
-| **Baseline** | each tier sees only its immediate downstream order | **3,348×** |
-| **Shared visibility** | every tier also sees real customer demand | **1.0×** |
-| Chat enabled | tiers exchange free-text messages, 1-week delay | 1.46× |
-| Personality | Wholesaler prompted risk-averse, chat enabled | 13,501× |
+| **Baseline** | each tier sees only its immediate downstream order | **21× – 3,348×** (3 runs) |
+| **Shared visibility** | every tier also sees real customer demand | **1.0× every time** (2 runs) |
+| Chat enabled | tiers exchange free-text messages, 1-week delay | 1.5× – 179× (2 runs) |
+| Personality | Wholesaler prompted risk-averse, chat enabled | 1.0× – 13,502× (4 runs) |
 
-*Amplification ratio = variance(factory orders) ÷ variance(customer demand). Full runs saved in
-[`backend/runs/`](backend/runs).*
+*Amplification ratio = variance(factory orders) ÷ variance(customer demand). The featured
+example throughout this README is `baseline.json` (3,348×) vs. `shared_visibility.json` (1.0×) —
+the other 9 runs sit in the same directory.*
 
-Same agents. Same prompts. Same model. The only thing that changed between the first two rows is
-**who can see real demand** — and the chaos mostly disappears:
+DeepSeek's agents aren't deterministic, so re-running a condition doesn't reproduce the same
+*magnitude* every time — one baseline run swings only to 21×, another to 3,348×. What stays
+constant across every single run: **shared visibility always collapses the ratio to almost
+exactly 1.0×**, and baseline/personality **never fall below 1×** — the bullwhip itself never
+disappears on its own, only its size varies. Chat enabled is the least predictable condition,
+ranging from a near-total collapse (1.5×) to substantial amplification (179×) — an honest answer
+to "does talking help or hurt": it depends on what actually gets said that run.
+
+Same agents. Same prompts. Same model. The only thing that changed between the featured baseline
+and shared-visibility runs is **who can see real demand** — and the chaos mostly disappears:
 
 ![Baseline chaos vs shared-visibility calm, same axes](docs/screenshot-compare.png)
 
