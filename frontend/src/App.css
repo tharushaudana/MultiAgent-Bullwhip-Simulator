@@ -101,6 +101,34 @@
   margin-left: auto;
 }
 
+.btn--small {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+/* ---------- week scrubber ---------- */
+
+.week-scrubber {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.week-scrubber input[type="range"] {
+  flex: 1;
+}
+
+.week-scrubber-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---------- hero row: the chart + the number ---------- */
 
 .hero-row {

@@ -12,6 +12,8 @@ interface Props {
   compareMode: boolean;
   onToggleCompare: () => void;
   error: string | null;
+  runningWeek?: number;
+  totalWeeks?: number;
 }
 
 export function Controls({
@@ -26,8 +28,16 @@ export function Controls({
   compareMode,
   onToggleCompare,
   error,
+  runningWeek,
+  totalWeeks,
 }: Props) {
   const running = status === "connecting" || status === "running";
+  const runLabel =
+    status === "running" && runningWeek !== undefined && totalWeeks !== undefined
+      ? `Running… week ${runningWeek}/${totalWeeks - 1}`
+      : running
+        ? "Running…"
+        : "Run";
 
   return (
     <div className="controls">
@@ -62,7 +72,7 @@ export function Controls({
       </label>
 
       <button className="btn btn--primary" onClick={onRun} disabled={running || compareMode}>
-        {running ? "Running…" : "Run"}
+        {runLabel}
       </button>
       <button className="btn" onClick={onReset} disabled={running}>
         Reset
