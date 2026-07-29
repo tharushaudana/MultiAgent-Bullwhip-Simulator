@@ -7,7 +7,7 @@ steady at 8 units/week, then one permanent step up to 12.
 
 That's the entire shock. Here's what four individually-rational LLM agents do with it:
 
-![Live run: a 4-unit demand step becomes a 200-unit factory order swing](docs/screenshot-run.png)
+![Live run: a 4-unit demand step becomes a 300-unit factory order swing, with the demand-step marker and week scrubber visible](docs/screenshot-run.png)
 
 ## The finding
 
@@ -87,8 +87,8 @@ State(week, inventories, pipelines, inbox, logs)      Engine = single source of 
   even if a live run stalls on an API call.
 - **React/Vite UI** — one dominant chart (flat gray demand vs. the red factory line), one
   live-updating number, one serif reasoning quote, small message bubbles between tiers showing
-  only the current week's traffic, and a "Compare both" view that stacks two saved runs on
-  identical axes.
+  only the current week's traffic, a week timeline scrubber, a toggled-open conversation-log
+  transcript, and a "Compare both" view that stacks two saved runs on identical axes.
 
 ## Conditions
 
@@ -118,6 +118,26 @@ language *and* come from a comfortably-stocked tier count. A real (mild) example
 phrases like *"nothing urgent"* or neutral logistics language (*"shipped immediately"*) can
 register as false positives. Treat `claim_inflation` as a directional signal worth spot-checking
 against the raw log, not a certified lie-detector.
+
+## Traceability: scrubbing back through a run
+
+The live dashboard only shows *this week's* fading message bubbles by design — a permanent
+scrolling chat wall was deliberately left out of the primary view (the original design brief was
+explicit that "every agent demo looks like that"). But every week that streams by is still
+sitting in the browser, so two things make it fully inspectable on demand instead of gone
+forever:
+
+- **Week scrubber** — drag back through any completed week, live or after the run finishes. The
+  chart, the amplification ratio, claim inflation, the reasoning quote, and the tier cards all
+  jump to that week's actual state (the ratio is shown *as of that week*, not just the final
+  value, so you can watch it climb).
+- **Conversation log** — a toggle-open drawer, three chat-style lanes (one per adjacent tier
+  pair). Every message is stamped with the sender's real inventory/backlog at that moment, and
+  flagged **⚠ exaggerated** when the claim-inflation formula says the urgency doesn't match the
+  real stock — the project's most interesting finding, made visible instead of buried in a
+  single aggregate number.
+
+![Scrubbed back to week 12: the conversation log shows a flagged "urgent... please expedite" message sent while the Wholesaler was sitting on zero backlog](docs/screenshot-conversation.png)
 
 ## Running it
 
