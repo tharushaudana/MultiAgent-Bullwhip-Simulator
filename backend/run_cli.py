@@ -11,24 +11,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from app.config import Config  # noqa: E402
+from app.conditions import CONDITIONS, build_config  # noqa: E402
 from app.simulation import run_simulation  # noqa: E402
 
 RUNS_DIR = Path(__file__).parent / "runs"
 
-CONDITIONS = {
-    "baseline": lambda: Config(),
-    "shared_visibility": lambda: Config(shared_visibility=True),
-    "chat_enabled": lambda: Config(chat_enabled=True),
-    "personality": lambda: Config(chat_enabled=True, personality_tier="Wholesaler"),
-}
-
 
 async def main(condition: str, out_name: str | None, weeks: int | None) -> None:
-    config = CONDITIONS[condition]()
-    if weeks is not None:
-        config = config.model_copy(update={"weeks": weeks})
-        config = Config(**config.model_dump())  # re-run validator to refit demand_pattern
+    overrides = {"weeks": weeks} if weeks is not None else {}
+    config = build_config(condition, **overrides)
 
     print(f"Running condition={condition!r} weeks={config.weeks} model={config.model}")
     snapshots = []
