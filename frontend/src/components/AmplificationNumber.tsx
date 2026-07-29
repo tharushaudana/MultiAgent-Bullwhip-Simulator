@@ -12,7 +12,9 @@ export function AmplificationNumber({ value }: Props) {
   return (
     <div className="hero-figure">
       <div className="stat-label">Amplification ratio</div>
-      <div className="stat-value">{value === null ? "—" : formatRatio(value)}</div>
+      <div className={`stat-value${value === null ? " stat-value--empty" : ""}`}>
+        {value === null ? "—" : formatRatio(value)}
+      </div>
       <div className="stat-caption">variance(factory orders) ÷ variance(customer demand)</div>
     </div>
   );

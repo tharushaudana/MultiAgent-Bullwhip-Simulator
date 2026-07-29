@@ -153,6 +153,10 @@
   font-variant-numeric: proportional-nums;
 }
 
+.stat-value--empty {
+  color: var(--text-muted);
+}
+
 .stat-caption {
   font-size: 11px;
   color: var(--text-muted);
