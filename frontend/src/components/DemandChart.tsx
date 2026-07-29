@@ -7,12 +7,66 @@ import {
   LineElement,
   PointElement,
   Tooltip,
+  type Plugin,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 import type { WeekSnapshot } from "../types";
 import { useIsDark } from "../useColorScheme";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
+export interface ChartMark {
+  week: number;
+  color: string;
+  label?: string;
+  dash?: number[];
+}
+
+interface WeekMarkerPluginOptions {
+  marks: { index: number; color: string; label?: string; dash?: number[] }[];
+}
+
+// Small inline plugin (no chartjs-plugin-annotation dependency) that draws
+// one or more labeled dashed vertical lines -- used for the demand-step week
+// and the current scrub/live position.
+const weekMarkerPlugin: Plugin<"line", unknown> = {
+  id: "weekMarkerPlugin",
+  afterDatasetsDraw(chart) {
+    const opts = (chart.options.plugins as Record<string, unknown> | undefined)?.weekMarkerPlugin as
+      | WeekMarkerPluginOptions
+      | undefined;
+    const marks = opts?.marks ?? [];
+    if (marks.length === 0) return;
+
+    const { ctx, chartArea, scales } = chart;
+    const xScale = scales.x;
+    if (!xScale || !chartArea) return;
+
+    ctx.save();
+    for (const mark of marks) {
+      if (mark.index < 0) continue;
+      const x = xScale.getPixelForValue(mark.index);
+      if (Number.isNaN(x)) continue;
+
+      ctx.beginPath();
+      ctx.strokeStyle = mark.color;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash(mark.dash ?? [4, 4]);
+      ctx.moveTo(x, chartArea.top);
+      ctx.lineTo(x, chartArea.bottom);
+      ctx.stroke();
+
+      if (mark.label) {
+        ctx.setLineDash([]);
+        ctx.fillStyle = mark.color;
+        ctx.font = "10px system-ui, -apple-system, sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText(mark.label, x + 4, chartArea.top + 10);
+      }
+    }
+    ctx.restore();
+  },
+};
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, weekMarkerPlugin);
 
 // Deliberately a neutral gray (not a categorical hue) paired with one alarm
 // red -- validated for CVD separation (dE 24.9) and contrast on both chart
@@ -25,9 +79,10 @@ interface Props {
   weeks: WeekSnapshot[];
   maxY?: number;
   heightPx?: number;
+  marks?: ChartMark[];
 }
 
-export function DemandChart({ weeks, maxY, heightPx }: Props) {
+export function DemandChart({ weeks, maxY, heightPx, marks }: Props) {
   const isDark = useIsDark();
   const gridline = isDark ? "#2c2c2a" : "#e1e0d9";
   const tickColor = "#898781";
@@ -63,6 +118,16 @@ export function DemandChart({ weeks, maxY, heightPx }: Props) {
     [weeks]
   );
 
+  const resolvedMarks = useMemo(() => {
+    if (!marks || marks.length === 0) return [];
+    return marks.map((m) => ({
+      index: weeks.findIndex((w) => w.week === m.week),
+      color: m.color,
+      label: m.label,
+      dash: m.dash,
+    }));
+  }, [marks, weeks]);
+
   const options = useMemo(
     () => ({
       responsive: true,
@@ -83,6 +148,7 @@ export function DemandChart({ weeks, maxY, heightPx }: Props) {
           borderWidth: 1,
           padding: 8,
         },
+        weekMarkerPlugin: { marks: resolvedMarks },
       },
       scales: {
         x: {
@@ -99,7 +165,7 @@ export function DemandChart({ weeks, maxY, heightPx }: Props) {
         },
       },
     }),
-    [gridline, tickColor, legendColor, tooltipBg, tooltipTitle, tooltipBody, maxY]
+    [gridline, tickColor, legendColor, tooltipBg, tooltipTitle, tooltipBody, maxY, resolvedMarks]
   );
 
   return (
