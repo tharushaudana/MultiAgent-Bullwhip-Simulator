@@ -1,0 +1,19 @@
+# Python
+backend/venv/
+backend/__pycache__/
+**/__pycache__/
+*.pyc
+backend/.env
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Runs (ignore ad-hoc runs; demo baseline/shared JSON are force-added deliberately)
+backend/runs/*.json
+!backend/runs/.gitkeep
+
+# Editor/OS
+.vscode/
+.DS_Store
+Thumbs.db
