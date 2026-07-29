@@ -62,6 +62,9 @@ export function useRunSocket() {
     wsRef.current?.close();
     wsRef.current = null;
     setStatus("idle");
+    setWeeks([]);
+    setError(null);
+    setRunId(null);
   }, []);
 
   return { status, weeks, error, runId, start, stop };
